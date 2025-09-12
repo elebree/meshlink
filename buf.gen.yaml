@@ -1,0 +1,14 @@
+# Learn more: https://buf.build/docs/configuration/v2/buf-gen-yaml
+version: v2
+inputs:
+  - git_repo: https://github.com/meshtastic/protobufs.git
+    branch: master
+    depth: 3
+plugins:
+  - local: protoc-gen-es
+    opt: target=ts
+    out: src/gen
+    strategy: all
+    types:
+      - meshtastic.ChannelSet
+      - meshtastic.SharedContact

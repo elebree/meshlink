@@ -1,8 +1,6 @@
-import { meshtastic } from './protobuf.js';
-const { ChannelSet, SharedContact } = meshtastic;
-
-export type IChannelSet = meshtastic.IChannelSet;
-export type ISharedContact = meshtastic.ISharedContact;
+import { fromBinary, toJson, type JsonValue } from "@bufbuild/protobuf";
+import { SharedContactSchema } from "./gen/meshtastic/admin_pb";
+import { ChannelSetSchema } from "./gen/meshtastic/apponly_pb";
 
 const normalizeBase64 = (base64: string): string => {
     const normalized = base64.replace(/-/g, '+').replace(/_/g, '/');
@@ -12,7 +10,7 @@ const normalizeBase64 = (base64: string): string => {
 
 export type DecodedResult = {
     type: 'ChannelSet' | 'SharedContact';
-    data: IChannelSet | ISharedContact;
+    data: JsonValue;
 };
 
 export const decodeMeshtasticURL = (url: string): DecodedResult => {
@@ -25,16 +23,16 @@ export const decodeMeshtasticURL = (url: string): DecodedResult => {
     const buffer = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
 
     try {
-        const channelSet = ChannelSet.decode(buffer);
+        const channelSet = fromBinary(ChannelSetSchema, buffer);
         if (channelSet.settings && channelSet.settings.length > 0) {
-            return { type: 'ChannelSet', data: channelSet };
+            return { type: 'ChannelSet', data: toJson(ChannelSetSchema, channelSet) };
         }
     } catch (e) { }
 
     try {
-        const sharedContact = SharedContact.decode(buffer);
+        const sharedContact = fromBinary(SharedContactSchema, buffer);
         if (sharedContact.user) {
-            return { type: 'SharedContact', data: sharedContact };
+            return { type: 'SharedContact', data: toJson(SharedContactSchema, sharedContact) };
         }
     } catch (e) {
         throw new Error("Buffer could not be decoded as ChannelSet or SharedContact.");
