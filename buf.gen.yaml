@@ -7,7 +7,7 @@ inputs:
 plugins:
   - local: protoc-gen-es
     opt: target=ts
-    out: src/gen
+    out: src/lib/gen
     strategy: all
     types:
       - meshtastic.ChannelSet
