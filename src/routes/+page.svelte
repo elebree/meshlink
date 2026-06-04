@@ -4,13 +4,14 @@
   import "prismjs/components/prism-json";
   import "prismjs/themes/prism-tomorrow.css";
   import QRCode from "qrcode";
-  import { onDestroy, onMount, tick } from "svelte";
+  import { onMount, tick } from "svelte";
   import { decodeMeshtasticURL, type DecodedResult } from "../lib/Decoder";
 
   let input: string = "";
   let decoded: DecodedResult | null = null;
   let error: string | null = null;
   let qrCodeDataUrl: string | null = null;
+  let initialHashLoaded = false;
 
   const exampleURL =
     "https://meshtastic.org/e/#CisSIANumm0eLMrIHWiL18TEMiPd9yhGrhWXnh2bYgZ8AWU8GgdlbGVicmVlEgwIATgDQApIAVAbaAE";
@@ -36,7 +37,7 @@
       }
     }
 
-    if (browser) {
+    if (browser && initialHashLoaded) {
       const currentHash = decodeURIComponent(location.hash.slice(1));
       if (trimmed !== currentHash) {
         history.replaceState(null, "", "#" + encodeURIComponent(trimmed));
@@ -63,16 +64,15 @@
       Prism.highlightAll();
     });
   }
-  if (browser) {
-    onMount(() => {
-      decodeFromHash();
-      window.addEventListener("hashchange", decodeFromHash);
-    });
+  onMount(() => {
+    decodeFromHash();
+    initialHashLoaded = true;
+    window.addEventListener("hashchange", decodeFromHash);
 
-    onDestroy(() => {
+    return () => {
       window.removeEventListener("hashchange", decodeFromHash);
-    });
-  }
+    };
+  });
 </script>
 
 <div class="container">
